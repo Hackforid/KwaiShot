@@ -1,8 +1,8 @@
 package com.smilehacker.kwaishot
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import com.smilehacker.kwaishot.ui.main.MainFragment
+import android.support.v7.app.AppCompatActivity
+import com.smilehacker.kwaishot.ui.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
+                    .replace(R.id.container, HomeFragment())
                     .commitNow()
         }
     }
