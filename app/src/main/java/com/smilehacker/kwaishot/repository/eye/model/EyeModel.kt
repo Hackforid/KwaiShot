@@ -8,15 +8,18 @@ import com.smilehacker.kwaishot.repository.model.VideoInfo
  */
 
 data class VideosResp(
-        val data: List<Video>
-)
+        @SerializedName("itemList")
+        val itemList: List<Item>
+) {
+    data class Item(val type: String, val data: Video)
+}
 
 data class Video(
         val id: Long,
         val title: String,
         val description: String?,
-        val author: Author,
-        val cover: Cover,
+        val author: Author?,
+        val cover: Cover?,
         @SerializedName("playInfo")
         val playInfo: List<PlayInfo>
 
@@ -51,7 +54,7 @@ data class Video(
 }
 
 fun Video.toCommonVideoInfo() : VideoInfo {
-    val author = com.smilehacker.kwaishot.repository.model.Author(this.author.id, this.author.name, this.author.description, this.author.icon)
+    val author = if (this.author != null) com.smilehacker.kwaishot.repository.model.Author(this.author.id, this.author.name, this.author.description, this.author.icon) else null
     val videos = this.playInfo.map {
         com.smilehacker.kwaishot.repository.model.Video(it.height, it.width,
                 it.urlList.map {
@@ -60,6 +63,6 @@ fun Video.toCommonVideoInfo() : VideoInfo {
                 })
     }
     return VideoInfo(this.id, this.title, this.description,
-            author, this.cover.big, this.cover.normal, videos)
+            author, this.cover?.big, this.cover?.normal, videos)
 }
 

@@ -8,7 +8,7 @@ data class VideoInfo(
         val title: String,
         val desc: String?,
 
-        val author: Author,
+        val author: Author?,
 
         val bigCover: String?,
         val normalCover: String?,

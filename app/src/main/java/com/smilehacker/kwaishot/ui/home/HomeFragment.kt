@@ -1,5 +1,6 @@
 package com.smilehacker.kwaishot.ui.home
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -20,5 +21,17 @@ class HomeFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mViewModel = ViewModelProviders.of(this).get(HomeViewModel::class.java)
+        initViewModel()
+        mViewModel.refreshPage()
+    }
+
+    private fun initViewModel() {
+        mViewModel.getVideos().observe(this, Observer {
+            list -> println(list)
+        })
+
+        mViewModel.getErrorStatus().observe(this, Observer {
+            println(it)
+        })
     }
 }
