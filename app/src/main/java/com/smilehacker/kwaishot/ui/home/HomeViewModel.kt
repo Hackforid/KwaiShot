@@ -28,6 +28,7 @@ class HomeViewModel: ViewModel() {
     }
 
     fun loadNextPage() {
+        println("load page ${mCurrentPage + 1}")
         loadPage(mCurrentPage + 1)
     }
 
@@ -41,7 +42,9 @@ class HomeViewModel: ViewModel() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
-                    val newList = if (page == 0) it else mVideos.value!!.toMutableList().also { it.addAll(it) }
+                    videos ->
+                    println(videos)
+                    val newList = if (page == 0) videos else mVideos.value!!.toMutableList().also { it.addAll(videos) }
                     mVideos.value = newList
                     mCurrentPage = page
                 }, {

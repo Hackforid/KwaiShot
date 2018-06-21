@@ -26,7 +26,7 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
         val height = if (model.isFirst) {
             width
         } else {
-            (width * 1.8).toInt()
+            (width * 1.5).toInt()
         }
 
         vh.itemView.layoutParams.height = height

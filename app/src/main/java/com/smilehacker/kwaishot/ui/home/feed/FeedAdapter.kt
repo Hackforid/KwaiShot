@@ -8,5 +8,6 @@ class FeedAdapter: LegoAdapter() {
     init {
         register(VideoCellComponent())
         setDiffUtilEnabled(true)
+        setDiffModelChanged(true)
     }
 }
