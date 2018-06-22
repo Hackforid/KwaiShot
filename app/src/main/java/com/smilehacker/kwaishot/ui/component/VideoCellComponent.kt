@@ -33,6 +33,10 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
 
         vh.title.text = model.title
         vh.avatar.setImageURI(model.avatar)
+
+        vh.itemView.setOnClickListener {
+            mListener?.onVideoCellClick(model.id)
+        }
     }
 
     override fun getViewHolder(parent: ViewGroup): ViewHolder {
@@ -47,10 +51,19 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
         val avatar by bindView<SimpleDraweeView>(R.id.iv_avatar)
     }
 
-    data class Model(@LegoIndex @JvmField val id: Int,
+    data class Model(@LegoIndex @JvmField val id: Long,
                      @LegoField @JvmField val coverUrl: String,
                      @LegoField @JvmField val title: String?,
                      @LegoField @JvmField val avatar: String?,
                      val isFirst: Boolean = false)
 
+    interface VideoCellListener {
+        fun onVideoCellClick(id: Long)
+    }
+
+    private var mListener: VideoCellListener? = null
+
+    fun setListener(listener: VideoCellListener?) {
+        mListener = listener
+    }
 }

@@ -10,22 +10,27 @@ import android.support.v7.widget.StaggeredGridLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import com.smilehacker.kwaishot.R
 import com.smilehacker.kwaishot.home.feed.FeedAdapter
+import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
 import com.smilehacker.kwaishot.utils.bindView
 import com.smilehacker.kwaishot.utils.widget.LegoRefreshHelper
+import com.smilehacker.kwaishot.video.VideoFragment
 import com.smilehacker.lego.util.NoAlphaDefaultItemAnimator
 
-class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
-
+class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener, VideoCellComponent.VideoCellListener {
     private val mRvFeed by bindView<RecyclerView>(R.id.rv_feed)
     private val mSwipeRefresher by bindView<SwipeRefreshLayout>(R.id.srl)
+    private val mVideoContainer by bindView<FrameLayout>(R.id.video_container)
 
 
     private lateinit var mViewModel: HomeViewModel
-    private val mFeedAdapter by lazy { FeedAdapter() }
+    private val mFeedAdapter by lazy { FeedAdapter(this) }
     private val mRefreshHelper by lazy { LegoRefreshHelper() }
+
+    private val mVideoFragment by lazy { VideoFragment() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.frg_home, container, false)
@@ -59,7 +64,7 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
             mRefreshHelper.refreshComplete()
 
             val models = list?.mapIndexed { index, videoInfo ->
-                VideoCellComponent.Model(videoInfo.id.toInt(), videoInfo.normalCover!!, videoInfo.title, videoInfo.author?.icon, index == 0) }
+                VideoCellComponent.Model(videoInfo.id, videoInfo.normalCover!!, videoInfo.title, videoInfo.author?.icon, index == 0) }
                     ?: ArrayList()
             mFeedAdapter.commitData(models)
         })
@@ -80,4 +85,24 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
     override fun onRefresh() {
         mViewModel.refreshPage()
     }
+
+    private fun openVideo(id: Long) {
+        val videoInfo = mViewModel.getVideos().value?.find { it.id == id } ?: return
+        openVideo(videoInfo)
+    }
+
+    private fun openVideo(videoInfo: VideoInfo) {
+        mVideoContainer.bringToFront()
+        childFragmentManager.beginTransaction()
+                .replace(R.id.video_container, mVideoFragment)
+                .commitNow()
+    }
+
+    /**
+     * Video Cell
+     */
+    override fun onVideoCellClick(id: Long) {
+        openVideo(id)
+    }
+
 }
