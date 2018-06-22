@@ -1,13 +1,16 @@
 package com.smilehacker.kwaishot
 
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import com.smilehacker.kwaishot.ui.home.HomeFragment
+import com.smilehacker.kwaishot.common.BaseActivity
+import com.smilehacker.kwaishot.home.HomeFragment
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        floatStatusBar()
+
+
         setContentView(R.layout.main_activity)
         supportActionBar?.hide()
         if (savedInstanceState == null) {

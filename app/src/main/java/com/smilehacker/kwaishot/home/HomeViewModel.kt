@@ -1,23 +1,24 @@
-package com.smilehacker.kwaishot.ui.home
+package com.smilehacker.kwaishot.home
 
 import android.annotation.SuppressLint
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
+import com.smilehacker.kwaishot.common.mvvm.BaseViewModel
+import com.smilehacker.kwaishot.common.mvvm.DiffMutableLiveData
 import com.smilehacker.kwaishot.common.mvvm.ErrorStatus
 import com.smilehacker.kwaishot.repository.VideoRepository
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel: BaseViewModel() {
 
 
     private val mRepo by lazy { VideoRepository() }
     private val mVideos by lazy { MutableLiveData<List<VideoInfo>>().also { it.value = ArrayList() } }
     private val mErrorStatus by lazy { MutableLiveData<ErrorStatus>() }
 
-    private var mCurrentPage = 0
+    private val mHasNextPage by lazy { DiffMutableLiveData<Boolean>() }
 
     fun getVideos() : LiveData<List<VideoInfo>> {
         return mVideos
@@ -27,31 +28,33 @@ class HomeViewModel: ViewModel() {
         return mErrorStatus
     }
 
+    fun getHasNextPage() : LiveData<Boolean> = mHasNextPage
+
     fun loadNextPage() {
-        println("load page ${mCurrentPage + 1}")
-        loadPage(mCurrentPage + 1)
+        nextPage()
     }
 
     fun refreshPage() {
-        loadPage(0)
+        nextPage(true)
     }
 
+
     @SuppressLint("CheckResult")
-    private fun loadPage(page: Int) {
-        mRepo.getPage(page)
+    private fun nextPage(init: Boolean = false) {
+        mRepo.nextPage(init)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     videos ->
                     println(videos)
-                    val newList = if (page == 0) videos else mVideos.value!!.toMutableList().also { it.addAll(videos) }
+                    mHasNextPage.value = videos.isNotEmpty()
+                    val newList = if (init) videos else mVideos.value!!.toMutableList().also { it.addAll(videos) }
                     mVideos.value = newList
-                    mCurrentPage = page
                 }, {
                     it.printStackTrace()
                     mErrorStatus.value = ErrorStatus(100, it.message)
                 })
+                .autoDispose()
     }
-
 
 }

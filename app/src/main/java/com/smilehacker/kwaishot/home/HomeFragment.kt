@@ -1,4 +1,4 @@
-package com.smilehacker.kwaishot.ui.home
+package com.smilehacker.kwaishot.home
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -11,10 +11,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.smilehacker.kwaishot.R
+import com.smilehacker.kwaishot.home.feed.FeedAdapter
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
-import com.smilehacker.kwaishot.ui.home.feed.FeedAdapter
 import com.smilehacker.kwaishot.utils.bindView
-import com.smilehacker.kwaishot.utils.ui.LegoRefreshHelper
+import com.smilehacker.kwaishot.utils.widget.LegoRefreshHelper
 import com.smilehacker.lego.util.NoAlphaDefaultItemAnimator
 
 class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
@@ -28,9 +28,7 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
     private val mRefreshHelper by lazy { LegoRefreshHelper() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        println("onCreateView")
-        val view = inflater.inflate(R.layout.frg_home, container, false)
-        return view
+        return inflater.inflate(R.layout.frg_home, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -68,6 +66,10 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener {
 
         mViewModel.getErrorStatus().observe(this, Observer {
             println(it)
+        })
+
+        mViewModel.getHasNextPage().observe(this, Observer {
+            mRefreshHelper.setLoadMoreEnabled(it ?: true)
         })
     }
 

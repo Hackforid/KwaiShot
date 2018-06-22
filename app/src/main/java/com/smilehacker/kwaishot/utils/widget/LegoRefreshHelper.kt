@@ -1,4 +1,4 @@
-package com.smilehacker.kwaishot.utils.ui
+package com.smilehacker.kwaishot.utils.widget
 
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.LinearLayoutManager

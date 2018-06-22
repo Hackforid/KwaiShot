@@ -15,6 +15,9 @@ class EyeVideoRepository : DataProvider {
 
     companion object {
 
+        const val HOST = "http://baobab.kaiyanapp.com"
+        const val INIT_URL = "$HOST/api/v4/tabs/selected"
+
         val service: EyeService by lazy { buildService() }
 
         private fun buildService() : EyeService {
@@ -27,14 +30,29 @@ class EyeVideoRepository : DataProvider {
         }
     }
 
-    override fun getPage(page: Int) : Observable<List<VideoInfo>> {
-        return service.getVideos(page = page)
-                .map {
-                    it.itemList.filter { it.type == "video" }
-                }
-                .map { list ->
-                    list.map{ it.data.toCommonVideoInfo() }
-                }
+    private var mNextUrl : String? = INIT_URL
+
+    override fun getPage(page: Int): Observable<List<VideoInfo>> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun nextPage(init: Boolean): Observable<List<VideoInfo>> {
+        if (init) {
+            mNextUrl = INIT_URL
+        }
+        return if (mNextUrl.isNullOrEmpty()) {
+            Observable.just(ArrayList())
+        } else {
+            service.getHotVideos(mNextUrl!!)
+                    .doOnNext {
+                        mNextUrl = it.nextPageUrl
+                    }
+                    .map {
+                        it.itemList.filter { it.type == "video" }
+                    }
+                    .map { list ->
+                        list.map{ it.data.toCommonVideoInfo() }
+                    }
+        }
+    }
 }

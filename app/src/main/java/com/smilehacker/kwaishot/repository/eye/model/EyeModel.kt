@@ -9,7 +9,10 @@ import com.smilehacker.kwaishot.repository.model.VideoInfo
 
 data class VideosResp(
         @SerializedName("itemList")
-        val itemList: List<Item>
+        val itemList: List<Item>,
+        @SerializedName("nextPageUrl")
+        val nextPageUrl: String?
+
 ) {
     data class Item(val type: String, val data: Video)
 }

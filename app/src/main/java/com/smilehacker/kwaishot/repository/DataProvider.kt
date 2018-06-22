@@ -8,4 +8,6 @@ import io.reactivex.Observable
  */
 interface DataProvider {
     fun getPage(page: Int) : Observable<List<VideoInfo>>
+
+    fun nextPage(init: Boolean = false) : Observable<List<VideoInfo>>
 }
