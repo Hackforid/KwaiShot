@@ -7,11 +7,30 @@ import android.support.annotation.ColorRes
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.WindowManager
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 
 /**
  * Created by quan.zhou on 2018/6/22.
  */
 open class BaseActivity: AppCompatActivity() {
+
+    private var mCompositeDisposable = CompositeDisposable()
+
+    protected fun addDispose(disposable: Disposable) {
+        mCompositeDisposable.add(disposable)
+    }
+
+    protected fun dispose() {
+        if (!mCompositeDisposable.isDisposed) {
+            mCompositeDisposable.dispose()
+        }
+    }
+
+    fun Disposable?.autoDispose() {
+        this?.let { addDispose(it) }
+    }
+
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
     protected fun floatStatusBar() {

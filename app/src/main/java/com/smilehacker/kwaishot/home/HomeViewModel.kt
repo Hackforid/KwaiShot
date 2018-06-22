@@ -46,7 +46,6 @@ class HomeViewModel: BaseViewModel() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     videos ->
-                    println(videos)
                     mHasNextPage.value = videos.isNotEmpty()
                     val newList = if (init) videos else mVideos.value!!.toMutableList().also { it.addAll(videos) }
                     mVideos.value = newList

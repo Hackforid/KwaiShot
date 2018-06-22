@@ -14,7 +14,11 @@ data class VideoInfo(
         val normalCover: String?,
 
         val videos: List<Video>
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        return other != null && other is VideoInfo && other.id == id
+    }
+}
 
 
 data class Video(

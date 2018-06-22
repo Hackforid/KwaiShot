@@ -12,9 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import com.smilehacker.kwaishot.R
+import com.smilehacker.kwaishot.event.OpenVideoPageEvent
 import com.smilehacker.kwaishot.home.feed.FeedAdapter
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
+import com.smilehacker.kwaishot.utils.RxBus
 import com.smilehacker.kwaishot.utils.bindView
 import com.smilehacker.kwaishot.utils.widget.LegoRefreshHelper
 import com.smilehacker.kwaishot.video.VideoFragment
@@ -92,10 +94,11 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener, VideoCellC
     }
 
     private fun openVideo(videoInfo: VideoInfo) {
-        mVideoContainer.bringToFront()
-        childFragmentManager.beginTransaction()
-                .replace(R.id.video_container, mVideoFragment)
-                .commitNow()
+//        mVideoContainer.bringToFront()
+//        childFragmentManager.beginTransaction()
+//                .replace(R.id.video_container, mVideoFragment)
+//                .commitNow()
+        RxBus.post(OpenVideoPageEvent(videoInfo))
     }
 
     /**
@@ -104,5 +107,4 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener, VideoCellC
     override fun onVideoCellClick(id: Long) {
         openVideo(id)
     }
-
 }

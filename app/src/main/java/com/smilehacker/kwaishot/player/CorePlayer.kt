@@ -16,6 +16,7 @@ import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import com.google.android.exoplayer2.util.Util
+import com.smilehacker.kwaishot.App
 
 /**
  * Created by quan.zhou on 2018/6/22.
@@ -23,7 +24,10 @@ import com.google.android.exoplayer2.util.Util
 class CorePlayer(private val context: Context) {
 
     private var mPlayer: SimpleExoPlayer? = null
-    private val mCache by lazy { SimpleCache(context.cacheDir, LeastRecentlyUsedCacheEvictor(1024 * 1024 * 100)) }
+
+    companion object {
+        private val mCache by lazy { SimpleCache(App.instance.cacheDir, LeastRecentlyUsedCacheEvictor(1024 * 1024 * 100)) }
+    }
 
 
     fun init() {
@@ -45,9 +49,8 @@ class CorePlayer(private val context: Context) {
     }
 
     fun release() {
-        mPlayer?.let {
-            it.release()
-        }
+        mPlayer?.stop()
+        mPlayer?.release()
     }
 
     fun prepare(url: String, loop: Boolean = false) {
