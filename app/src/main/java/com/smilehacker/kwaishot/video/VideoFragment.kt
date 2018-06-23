@@ -17,6 +17,7 @@ import com.smilehacker.kwaishot.player.CorePlayer
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.utils.DLog
 import com.smilehacker.kwaishot.utils.bindView
+import com.smilehacker.kwaishot.utils.widget.SnapContainer
 
 
 /**
@@ -28,6 +29,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     private val mAnimContainer by bindView<FrameLayout>(R.id.anim_container)
     private val mIvCover by bindView<SimpleDraweeView>(R.id.iv_cover)
     private val mContainer by bindView<ConstraintLayout>(R.id.container)
+    private val mSnapContainer by bindView<SnapContainer>(R.id.snap_container)
 
     private lateinit var mVideoViewModel: VideoViewModel
 
@@ -187,7 +189,6 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
             lp.height = (startHeight + heightStep * value).toInt()
             lp.width = (startWidth + widthStep * value).toInt()
             mIvCover.requestLayout()
-            DLog.d("anim $value")
         }
         anim.addListener(object : Animator.AnimatorListener {
             override fun onAnimationRepeat(animation: Animator?) {
