@@ -35,7 +35,11 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
         vh.avatar.setImageURI(model.avatar)
 
         vh.itemView.setOnClickListener {
-            mListener?.onVideoCellClick(model.id)
+            val pos = IntArray(2)
+            vh.cover.getLocationInWindow(pos)
+//            DLog.i("itemView: ${vh.cover.height} ${vh.cover.width} ${pos[0]} ${pos[1]}")
+            val posInfo = VideoCellPosInfo(pos[0], pos[1], vh.cover.width, vh.cover.height)
+            mListener?.onVideoCellClick(model.id, posInfo)
         }
     }
 
@@ -58,7 +62,7 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
                      val isFirst: Boolean = false)
 
     interface VideoCellListener {
-        fun onVideoCellClick(id: Long)
+        fun onVideoCellClick(id: Long, posInfo: VideoCellPosInfo? = null)
     }
 
     private var mListener: VideoCellListener? = null
@@ -66,4 +70,6 @@ class VideoCellComponent : LegoComponent<VideoCellComponent.ViewHolder, VideoCel
     fun setListener(listener: VideoCellListener?) {
         mListener = listener
     }
+
+    data class VideoCellPosInfo(val x: Int, val y: Int, val width: Int, val height: Int)
 }

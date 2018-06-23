@@ -14,7 +14,6 @@ import android.widget.FrameLayout
 import com.smilehacker.kwaishot.R
 import com.smilehacker.kwaishot.event.OpenVideoPageEvent
 import com.smilehacker.kwaishot.home.feed.FeedAdapter
-import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
 import com.smilehacker.kwaishot.utils.RxBus
 import com.smilehacker.kwaishot.utils.bindView
@@ -88,23 +87,11 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener, VideoCellC
         mViewModel.refreshPage()
     }
 
-    private fun openVideo(id: Long) {
-        val videoInfo = mViewModel.getVideos().value?.find { it.id == id } ?: return
-        openVideo(videoInfo)
-    }
-
-    private fun openVideo(videoInfo: VideoInfo) {
-//        mVideoContainer.bringToFront()
-//        childFragmentManager.beginTransaction()
-//                .replace(R.id.video_container, mVideoFragment)
-//                .commitNow()
-        RxBus.post(OpenVideoPageEvent(videoInfo))
-    }
-
     /**
      * Video Cell
      */
-    override fun onVideoCellClick(id: Long) {
-        openVideo(id)
+    override fun onVideoCellClick(id: Long, posInfo: VideoCellComponent.VideoCellPosInfo?) {
+        val videoInfo = mViewModel.getVideos().value?.find { it.id == id } ?: return
+        RxBus.post(OpenVideoPageEvent(videoInfo, posInfo))
     }
 }
