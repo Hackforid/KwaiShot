@@ -246,6 +246,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         stopAnim()
         releasePlayer()
         mContainer.alpha = 0f
+        mSnapContainer.reset()
     }
 
     private fun stopAnim() {
