@@ -24,7 +24,7 @@ import com.smilehacker.kwaishot.utils.widget.SnapContainer
  * Created by quan.zhou on 2018/6/22.
  */
 class VideoFragment: Fragment(), CorePlayer.Listener {
-    private val mSurfaceView by bindView<SurfaceView>(R.id.surface)
+    private val mSurfaceView by bindView<TextureView>(R.id.surface)
     private val mPlayerContainer by bindView<FrameLayout>(R.id.player_container)
     private val mAnimContainer by bindView<FrameLayout>(R.id.anim_container)
     private val mIvCover by bindView<SimpleDraweeView>(R.id.iv_cover)
@@ -42,6 +42,34 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.frg_video, container, false)
     }
+
+    override fun onStart() {
+        super.onStart()
+        DLog.d("onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        DLog.d("onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        DLog.d("onPause")
+    }
+
+
+    override fun onStop() {
+        super.onStop()
+        DLog.d("onStop")
+    }
+
+    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
+        super.setUserVisibleHint(isVisibleToUser)
+        DLog.d("isVisibleToUser $isVisibleToUser")
+        DLog.d("mContainer y = ${mContainer.y} ${mContainer.translationY}")
+    }
+
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -246,7 +274,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         stopAnim()
         releasePlayer()
         mContainer.alpha = 0f
-        mSnapContainer.reset()
+//        mSnapContainer.reset()
     }
 
     private fun stopAnim() {

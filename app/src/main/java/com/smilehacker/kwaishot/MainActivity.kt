@@ -49,6 +49,7 @@ class MainActivity : BaseActivity() {
                     .hide(mVideoFragment)
                     .show(mHomeFragment)
                     .commitNowAllowingStateLoss()
+            mVideoFragment.userVisibleHint = false
         } else {
             super.onBackPressed()
         }
@@ -64,6 +65,7 @@ class MainActivity : BaseActivity() {
             trans.add(R.id.container, mVideoFragment)
         }
         trans.commitNowAllowingStateLoss()
+        mVideoFragment.userVisibleHint = true
 
         posInfo?.let {
             mVideoFragment.startCoverAnimator(it.x, it.y, it.width, it.height)

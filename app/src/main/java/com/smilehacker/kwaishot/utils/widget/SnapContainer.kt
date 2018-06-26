@@ -20,6 +20,8 @@ class SnapContainer : FrameLayout {
 
     private var mIsDragging = false
 
+    private var mIsAnimting = false
+
     private var mSnapCallback: SnapCallback? = null
 
     constructor(context: Context) : this(context, null, 0)
@@ -34,7 +36,7 @@ class SnapContainer : FrameLayout {
     inner class DragCallback: ViewDragHelper.Callback() {
         override fun tryCaptureView(child: View, pointerId: Int): Boolean {
             DLog.d("tryCaptureView $child $pointerId")
-            return child == mPrimaryChild
+            return !mIsAnimting
         }
         override fun clampViewPositionVertical(child: View, top: Int, dy: Int): Int {
 //            DLog.d("clampViewPositionVertical $child $top $dy")
@@ -42,42 +44,19 @@ class SnapContainer : FrameLayout {
             return top
         }
 
-        override fun clampViewPositionHorizontal(child: View, left: Int, dx: Int): Int {
-            return super.clampViewPositionHorizontal(child, left, dx)
-        }
-
         override fun onViewReleased(releasedChild: View, xvel: Float, yvel: Float) {
-            super.onViewReleased(releasedChild, xvel, yvel)
 //            handleDragRelease()
+//            DLog.d("reset tranY ${mPrimaryChild.translationY}")
+            resetPrimaryChild()
         }
 
-        override fun onViewDragStateChanged(state: Int) {
-            super.onViewDragStateChanged(state)
-            DLog.d("view state $state")
-            if (state == ViewDragHelper.STATE_IDLE) {
-                handleDragRelease()
-            }
-        }
-
-        override fun onViewPositionChanged(changedView: View, left: Int, top: Int, dx: Int, dy: Int) {
-            super.onViewPositionChanged(changedView, left, top, dx, dy)
-        }
-
-        override fun getViewHorizontalDragRange(child: View): Int {
-            return super.getViewHorizontalDragRange(child)
-        }
-
-        override fun getViewVerticalDragRange(child: View): Int {
-            DLog.d("getViewVerticalDragRange")
-            if (child == mPrimaryChild) {
-                return 10000
-            }
-            return super.getViewVerticalDragRange(child)
-        }
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        return mDragHelper.shouldInterceptTouchEvent(ev)
+        if(mDragHelper.shouldInterceptTouchEvent(ev)) {
+            return true
+        }
+        return super.onInterceptTouchEvent(ev)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -101,16 +80,25 @@ class SnapContainer : FrameLayout {
     }
 
     private fun resetPrimaryChild() {
+        DLog.d("from tranY ${mPrimaryChild.translationY}")
+        mIsAnimting = true
         mPrimaryChild
                 .animate()
                 .x(0f)
                 .y(0f)
+//                .translationX(0f)
+//                .translationY(0f)
                 .setListener(object: Animator.AnimatorListener {
                     override fun onAnimationRepeat(animation: Animator?) {
                     }
 
                     override fun onAnimationEnd(animation: Animator?) {
-                        mPrimaryChild.postInvalidate()
+                        mPrimaryChild.post {
+//                            mPrimaryChild.translationX = 0f
+//                            mPrimaryChild.translationY = 0f
+                            DLog.d("to tranY ${mPrimaryChild.translationY}")
+                            mIsAnimting = false
+                        }
                     }
 
                     override fun onAnimationCancel(animation: Animator?) {
@@ -124,10 +112,21 @@ class SnapContainer : FrameLayout {
     }
 
     fun reset() {
+//        DLog.d("${mPrimaryChild.x} ${mPrimaryChild.y}")
+//        mDragHelper.smoothSlideViewTo(mPrimaryChild, 0, 0)
+//        ViewCompat.postInvalidateOnAnimation(this)
+//        postInvalidate()
         if (this::mPrimaryChild.isInitialized) {
             mPrimaryChild.x = 0f
             mPrimaryChild.y = 0f
-            mPrimaryChild.postInvalidate()
+            mPrimaryChild.translationX = 0f
+            mPrimaryChild.translationY = 0f
+//            mPrimaryChild.postInvalidate()
         }
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        DLog.d("$visibility ${mPrimaryChild.y}")
     }
 }

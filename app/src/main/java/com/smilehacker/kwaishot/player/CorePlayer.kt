@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.support.annotation.IntDef
 import android.view.SurfaceView
+import android.view.TextureView
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
@@ -118,6 +119,14 @@ class CorePlayer(private val context: Context) {
 
     fun detachSurfaceView(surfaceView: SurfaceView) {
         mPlayer?.clearVideoSurfaceView(surfaceView)
+    }
+
+    fun attachSurfaceView(surfaceView: TextureView) {
+        mPlayer?.setVideoTextureView(surfaceView)
+    }
+
+    fun detachSurfaceView(surfaceView: TextureView) {
+        mPlayer?.clearVideoTextureView(surfaceView)
     }
 
     fun release() {
