@@ -6,6 +6,7 @@ import android.support.v4.view.NestedScrollingChildHelper
 import android.support.v4.view.ViewCompat
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.View
 import android.widget.FrameLayout
 import com.smilehacker.kwaishot.utils.DLog
 
@@ -13,6 +14,12 @@ import com.smilehacker.kwaishot.utils.DLog
 class BottomSliderContainer: FrameLayout, NestedScrollingChild {
 
     private var mDownY = 0f
+    private var mDownX = 0f
+    private var mLastX = 0f
+    private var mLastY = 0f
+    private var mFirstMove = true
+    private var mMoveStep = 0
+    private var mParentStartNest = false
 
     private val mConsumed = IntArray(2)
     private val mOffsetInWindow = IntArray(2)
@@ -28,53 +35,72 @@ class BottomSliderContainer: FrameLayout, NestedScrollingChild {
         isNestedScrollingEnabled = true
     }
 
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
+        DLog.i("onInterceptTouchEvent ${ev.action}")
+        return super.onInterceptTouchEvent(ev)
+    }
+
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
-//        DLog.i("onTouchEvent ${event.action}")
+        DLog.i("onTouchEvent ${event.action}")
 
         val actionMasked = event.actionMasked
         val pointerID = event.getPointerId(0)
+        val pointIndex = event.findPointerIndex(pointerID)
+        if (pointIndex < 0) {
+            return false
+        }
 
         when(actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                val y = getPointerY(event, pointerID)
-                if (y == -1f) {
-                    return false
-                }
+                resetState()
+                val x = event.rawX
+                val y = event.rawY
+                mDownX = x
                 mDownY = y
-                startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
             }
             MotionEvent.ACTION_MOVE -> {
-                val y = getPointerY(event, pointerID)
-                if (y == -1f) {
-                    return false
+                val x = event.rawX
+                val y = event.rawY
+
+
+                if (mMoveStep == 1) {
+                    mParentStartNest = if (Math.abs(y - mDownY) > Math.abs((x - mDownX))) {
+                        startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
+                    } else {
+                        startNestedScroll(ViewCompat.SCROLL_AXIS_HORIZONTAL)
+                    }
                 }
 
-                var deltaY = y - mDownY
-                DLog.i("onMove start $deltaY")
 
-                if (dispatchNestedPreScroll(0, deltaY.toInt(), mConsumed, mOffsetInWindow)) {
-                    deltaY -= mConsumed[1]
+                if (mParentStartNest) {
+                    var deltaX = mLastX - x
+                    var deltaY =  mLastY - y
+
+                    dispatchNestedPreScroll(deltaX.toInt(), deltaY.toInt(), mConsumed, mOffsetInWindow)
+                    dispatchNestedScroll(0, 0, deltaX.toInt(), deltaY.toInt(), mOffsetInWindow)
                 }
-                DLog.i("onMove end $deltaY")
-                dispatchNestedScroll(0, 0, 0, deltaY.toInt(), mOffsetInWindow)
-                mDownY = y
+                mLastX = x
+                mLastY = y
+                mMoveStep++
             }
             MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
                 stopNestedScroll()
+                resetState()
             }
         }
 
-//        return super.onTouchEvent(event)
         return true
     }
 
-    private fun getPointerY(event: MotionEvent, pointerId: Int): Float {
-        val pointerIndex = event.findPointerIndex(pointerId)
-        return if (pointerIndex < 0) {
-            -1f
-        } else {
-            event.getY(pointerIndex)
-        }
+    private fun resetState() {
+        mParentStartNest = false
+        mFirstMove = true
+        mMoveStep = 0
+        mDownY = 0f
+        mDownX = 0f
+        mLastX = 0f
+        mLastY = 0f
     }
 
     override fun setNestedScrollingEnabled(enabled: Boolean) {
@@ -112,4 +138,10 @@ class BottomSliderContainer: FrameLayout, NestedScrollingChild {
     override fun dispatchNestedPreFling(velocityX: Float, velocityY: Float): Boolean {
         return mChildHelper.dispatchNestedPreFling(velocityX, velocityY)
     }
+
+    override fun onStartNestedScroll(child: View?, target: View?, nestedScrollAxes: Int): Boolean {
+        DLog.i("onStartNestedScroll $child")
+        return super.onStartNestedScroll(child, target, nestedScrollAxes)
+    }
+
 }

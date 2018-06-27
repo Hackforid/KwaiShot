@@ -1,20 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
         >
         <com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/holo_blue_bright"
+            android:background="@color/colorAccent"
             >
+            <android.support.v4.view.ViewPager
+                android:id="@+id/vp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                >
+            </android.support.v4.view.ViewPager>
         </com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer>
 
     </com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer>
+
+    <!--<com.smilehacker.kwaishot.utils.widget.nest.ElasticDragDismissFrameLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--app:dragDismissDistance="112dp"-->
+        <!--app:dragDismissScale="0.95"-->
+        <!--&gt;-->
+        <!--<android.support.v4.view.ViewPager-->
+            <!--android:id="@+id/vp"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--&gt;-->
+        <!--</android.support.v4.view.ViewPager>-->
+        <!--&lt;!&ndash;<com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer&ndash;&gt;-->
+        <!--&lt;!&ndash;android:layout_width="match_parent"&ndash;&gt;-->
+        <!--&lt;!&ndash;android:layout_height="match_parent"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:background="@color/colorAccent"&ndash;&gt;-->
+        <!--&lt;!&ndash;&gt;&ndash;&gt;-->
+        <!--&lt;!&ndash;</com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer>&ndash;&gt;-->
+
+    <!--</com.smilehacker.kwaishot.utils.widget.nest.ElasticDragDismissFrameLayout>-->
 
 </android.support.constraint.ConstraintLayout>
