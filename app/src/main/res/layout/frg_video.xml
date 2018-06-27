@@ -1,48 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.smilehacker.kwaishot.utils.widget.SnapContainer
-    android:id="@+id/snap_container"
+<com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/snap_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-
-    <android.support.constraint.ConstraintLayout
-        android:id="@+id/container"
+    <com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:background="@android:color/black"
-        android:alpha="0"
-        tools:alpha="1"
         >
-        <FrameLayout
-            android:id="@+id/player_container"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_video"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="match_parent"
             >
-            <TextureView
-                android:id="@+id/surface"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                />
-        </FrameLayout>
-        <FrameLayout
-            android:id="@+id/anim_container"
+
+        </android.support.v7.widget.RecyclerView>
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <com.facebook.drawee.view.SimpleDraweeView
-                android:id="@+id/iv_cover"
+            android:layout_height="match_parent"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:background="@android:color/black"
+            android:alpha="0"
+            tools:alpha="1"
+            android:visibility="gone"
+            >
+            <FrameLayout
+                android:id="@+id/player_container"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                />
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="gone"
+                >
+                <SurfaceView
+                    android:id="@+id/surface"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    />
+            </FrameLayout>
+            <FrameLayout
+                android:id="@+id/anim_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-        </FrameLayout>
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:id="@+id/iv_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    />
 
-    </android.support.constraint.ConstraintLayout>
-</com.smilehacker.kwaishot.utils.widget.SnapContainer>
+            </FrameLayout>
+
+        </android.support.constraint.ConstraintLayout>
+    </com.smilehacker.kwaishot.utils.widget.nest.BottomSliderContainer>
+</com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer>

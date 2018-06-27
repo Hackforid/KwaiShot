@@ -1,7 +1,6 @@
 package com.smilehacker.kwaishot.utils.widget.nest
 
 import android.content.Context
-import android.support.v4.view.NestedScrollingChild
 import android.support.v4.view.NestedScrollingChildHelper
 import android.support.v4.view.ViewCompat
 import android.util.AttributeSet
@@ -11,7 +10,7 @@ import android.widget.FrameLayout
 import com.smilehacker.kwaishot.utils.DLog
 
 
-class BottomSliderContainer: FrameLayout, NestedScrollingChild {
+class BottomSliderContainer: FrameLayout {
 
     private var mDownY = 0f
     private var mDownX = 0f
@@ -36,13 +35,13 @@ class BottomSliderContainer: FrameLayout, NestedScrollingChild {
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        DLog.i("onInterceptTouchEvent ${ev.action}")
+//        DLog.i("onInterceptTouchEvent ${ev.action}")
         return super.onInterceptTouchEvent(ev)
     }
 
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        DLog.i("onTouchEvent ${event.action}")
+//        DLog.i("onTouchEvent ${event.action}")
 
         val actionMasked = event.actionMasked
         val pointerID = event.getPointerId(0)
@@ -139,9 +138,11 @@ class BottomSliderContainer: FrameLayout, NestedScrollingChild {
         return mChildHelper.dispatchNestedPreFling(velocityX, velocityY)
     }
 
-    override fun onStartNestedScroll(child: View?, target: View?, nestedScrollAxes: Int): Boolean {
-        DLog.i("onStartNestedScroll $child")
-        return super.onStartNestedScroll(child, target, nestedScrollAxes)
+    override fun onStartNestedScroll(child: View, target: View, axes: Int): Boolean {
+        DLog.i("onStartNestedScroll $child $target $axes")
+        return super.onStartNestedScroll(child, target, axes)
     }
+
+
 
 }

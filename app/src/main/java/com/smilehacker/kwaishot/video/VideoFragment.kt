@@ -8,8 +8,13 @@ import android.graphics.Point
 import android.os.Bundle
 import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
-import android.view.*
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.Gravity.CENTER
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewPropertyAnimator
 import android.widget.FrameLayout
 import com.facebook.drawee.view.SimpleDraweeView
 import com.smilehacker.kwaishot.R
@@ -17,19 +22,21 @@ import com.smilehacker.kwaishot.player.CorePlayer
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.utils.DLog
 import com.smilehacker.kwaishot.utils.bindView
-import com.smilehacker.kwaishot.utils.widget.SnapContainer
+import com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer
 
 
 /**
  * Created by quan.zhou on 2018/6/22.
  */
 class VideoFragment: Fragment(), CorePlayer.Listener {
-    private val mSurfaceView by bindView<TextureView>(R.id.surface)
+//    private val mSurfaceView by bindView<SurfaceView>(R.id.surface)
     private val mPlayerContainer by bindView<FrameLayout>(R.id.player_container)
     private val mAnimContainer by bindView<FrameLayout>(R.id.anim_container)
     private val mIvCover by bindView<SimpleDraweeView>(R.id.iv_cover)
     private val mContainer by bindView<ConstraintLayout>(R.id.container)
-    private val mSnapContainer by bindView<SnapContainer>(R.id.snap_container)
+    private val mSnapContainer by bindView<DragAwayContainer>(R.id.snap_container)
+    private val mRvVideo by bindView<RecyclerView>(R.id.rv_video)
+    private val mRvAdapter by lazy { VideoAdapter() }
 
     private lateinit var mVideoViewModel: VideoViewModel
 
@@ -41,27 +48,6 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.frg_video, container, false)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        DLog.d("onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        DLog.d("onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        DLog.d("onPause")
-    }
-
-
-    override fun onStop() {
-        super.onStop()
-        DLog.d("onStop")
     }
 
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
@@ -77,6 +63,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         if (mVideoInfo != null) {
             mVideoViewModel.setVideoInfo(mVideoInfo!!)
         }
+        initUI()
         initData()
     }
 
@@ -87,12 +74,18 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         }
     }
 
+    private fun initUI() {
+        mRvVideo.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        mRvVideo.adapter = mRvAdapter
+    }
+
     private fun initData() {
         mVideoViewModel.getVideoInfo().observe(this, Observer {
 //            println("VideoInfo[$it]")
             if (it != null) {
                 playVideo(it)
             }
+            mRvAdapter.commitData(arrayListOf(VideoComponent.Model("aaa"), VideoComponent.Model("bbb")) as List<Any>?)
         })
     }
 
@@ -109,8 +102,8 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         mPlayer = CorePlayer(activity!!)
         mPlayer!!.init()
         mPlayer!!.addListener(this)
-        mSurfaceView.visibility = View.INVISIBLE
-        mPlayer!!.attachSurfaceView(mSurfaceView)
+//        mSurfaceView.visibility = View.INVISIBLE
+//        mPlayer!!.attachSurfaceView(mSurfaceView)
         mPlayer!!.prepare(videoInfo.videos[0].urls[0].url, true)
     }
 
@@ -135,7 +128,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (hidden) {
-            mPlayer?.detachSurfaceView(mSurfaceView)
+//            mPlayer?.detachSurfaceView(mSurfaceView)
             mPlayer?.pause()
         }
     }
@@ -146,7 +139,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     }
 
     private fun releasePlayer() {
-        mPlayer?.detachSurfaceView(mSurfaceView)
+//        mPlayer?.detachSurfaceView(mSurfaceView)
         mPlayer?.release()
         mPlayer = null
     }
@@ -158,7 +151,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     override fun onPlayerStateChanged(isPlay: Boolean, playState: Int) {
         if (playState == CorePlayer.STATE_READY) {
             applyVideoAspectRatio()
-            mSurfaceView.visibility = View.VISIBLE
+//            mSurfaceView.visibility = View.VISIBLE
 
             if (isPlay) {
                 animEnd()
@@ -245,14 +238,14 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
                 .setListener(object : Animator.AnimatorListener {
                     override fun onAnimationEnd(animation: Animator?) {
                         mAnimContainer.post {
-                            mAnimContainer.visibility = View.INVISIBLE
+                            mAnimContainer.visibility = View.GONE
                             mAnimContainer.alpha = 1f
                         }
                     }
 
                     override fun onAnimationCancel(animation: Animator?) {
                         mAnimContainer.post {
-                            mAnimContainer.visibility = View.INVISIBLE
+                            mAnimContainer.visibility = View.GONE
                             mAnimContainer.alpha = 1f
                         }
                     }

@@ -2,6 +2,8 @@ package com.smilehacker.kwaishot.utils.widget.nest
 
 import android.content.Context
 import android.support.v4.view.ViewCompat
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -30,7 +32,16 @@ class DragAwayContainer: FrameLayout {
 
 
     override fun onStartNestedScroll(child: View, target: View, nestedScrollAxes: Int): Boolean {
-        DLog.i("onStartNestedScroll $child vertical=${nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL != 0}")
+//        DLog.i("onStartNestedScroll $nestedScrollAxes vertical=${nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL != 0}")
+//        DLog.i("aaaa = ${ViewCompat.SCROLL_AXIS_HORIZONTAL} ${ViewCompat.SCROLL_AXIS_VERTICAL} ${ViewCompat.SCROLL_AXIS_NONE}")
+        if (target is RecyclerView) {
+            if (target.layoutManager != null && target.layoutManager is LinearLayoutManager) {
+                val layoutManager = target.layoutManager as LinearLayoutManager
+                if (layoutManager.orientation == LinearLayoutManager.HORIZONTAL) {
+                    return nestedScrollAxes and ViewCompat.SCROLL_AXIS_HORIZONTAL != 0
+                }
+            }
+        }
         return nestedScrollAxes and ViewCompat.SCROLL_AXIS_VERTICAL != 0
     }
 
