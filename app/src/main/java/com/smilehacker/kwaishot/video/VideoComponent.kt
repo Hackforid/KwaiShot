@@ -2,7 +2,7 @@ package com.smilehacker.kwaishot.video
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.SurfaceView
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import com.smilehacker.kwaishot.R
@@ -13,6 +13,7 @@ import com.smilehacker.lego.annotation.LegoIndex
 class VideoComponent : LegoComponent<VideoComponent.ViewHolder, VideoComponent.Model>() {
 
     override fun onBindData(viewHolder: ViewHolder, model: Model) {
+        viewHolder.surfaceView
     }
 
     override fun getViewHolder(parent: ViewGroup): ViewHolder {
@@ -22,10 +23,10 @@ class VideoComponent : LegoComponent<VideoComponent.ViewHolder, VideoComponent.M
 
 
     class ViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView) {
-        val surfaceView by bindView<SurfaceView>(R.id.surface_view)
+        val surfaceView by bindView<TextureView>(R.id.surface_view)
     }
 
     data class Model(
-            @LegoIndex @JvmField val videoUrl: String
+            @LegoIndex @JvmField val coverUrl: String
     )
 }

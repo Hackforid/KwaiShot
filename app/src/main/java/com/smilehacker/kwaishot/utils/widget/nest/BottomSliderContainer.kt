@@ -143,6 +143,25 @@ class BottomSliderContainer: FrameLayout {
         return super.onStartNestedScroll(child, target, axes)
     }
 
-
+//    override fun onStartNestedScroll(child: View, target: View, axes: Int, type: Int): Boolean {
+//        DLog.i("onStartNestedScroll2 $axes $type")
+//        return onStartNestedScroll(child, target, axes)
+//    }
+//
+//    override fun onNestedPreScroll(target: View, dx: Int, dy: Int, consumed: IntArray, type: Int) {
+//        onNestedPreScroll(target, dx, dy, consumed)
+//    }
+//
+//    override fun onStopNestedScroll(target: View, type: Int) {
+//        onStopNestedScroll(target)
+//    }
+//
+//    override fun onNestedScrollAccepted(child: View, target: View, axes: Int, type: Int) {
+//        onNestedScrollAccepted(child, target, axes)
+//    }
+//
+//    override fun onNestedScroll(target: View, dxConsumed: Int, dyConsumed: Int, dxUnconsumed: Int, dyUnconsumed: Int, type: Int) {
+//        onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed)
+//    }
 
 }

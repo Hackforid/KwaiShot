@@ -2,10 +2,12 @@ package com.smilehacker.kwaishot
 
 import android.os.Bundle
 import com.smilehacker.kwaishot.common.BaseActivity
+import com.smilehacker.kwaishot.event.CloseVideoPageEvent
 import com.smilehacker.kwaishot.event.OpenVideoPageEvent
 import com.smilehacker.kwaishot.home.HomeFragment
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
+import com.smilehacker.kwaishot.utils.DLog
 import com.smilehacker.kwaishot.utils.RxBus
 import com.smilehacker.kwaishot.video.VideoFragment
 
@@ -40,6 +42,11 @@ class MainActivity : BaseActivity() {
                     openVideoPage(it.videoInfo, it.videoPostInfo)
                 }
                 .autoDispose()
+        RxBus.toObservable(CloseVideoPageEvent::class.java)
+                .subscribe {
+                    onBackPressed()
+                }
+                .autoDispose()
     }
 
     override fun onBackPressed() {
@@ -56,7 +63,6 @@ class MainActivity : BaseActivity() {
     }
 
     private fun openVideoPage(videoInfo: VideoInfo, posInfo: VideoCellComponent.VideoCellPosInfo?) {
-        mVideoFragment.setVideoInfo(videoInfo)
         val trans = supportFragmentManager.beginTransaction()
 //        trans.hide(mHomeFragment)
         if (supportFragmentManager.fragments.contains(mVideoFragment)) {
@@ -66,6 +72,8 @@ class MainActivity : BaseActivity() {
         }
         trans.commitNowAllowingStateLoss()
         mVideoFragment.userVisibleHint = true
+
+        DLog.i("posInfo = $posInfo")
 
         posInfo?.let {
             mVideoFragment.startCoverAnimator(it.x, it.y, it.width, it.height)

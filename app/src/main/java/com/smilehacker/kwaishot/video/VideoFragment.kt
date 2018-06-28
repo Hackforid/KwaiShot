@@ -6,37 +6,40 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Point
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.*
 import android.view.Gravity.CENTER
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewPropertyAnimator
 import android.widget.FrameLayout
 import com.facebook.drawee.view.SimpleDraweeView
 import com.smilehacker.kwaishot.R
+import com.smilehacker.kwaishot.event.CloseVideoPageEvent
 import com.smilehacker.kwaishot.player.CorePlayer
+import com.smilehacker.kwaishot.repository.model.PosInfo
 import com.smilehacker.kwaishot.repository.model.VideoInfo
 import com.smilehacker.kwaishot.utils.DLog
+import com.smilehacker.kwaishot.utils.RecyclerPagerHelper
+import com.smilehacker.kwaishot.utils.RxBus
 import com.smilehacker.kwaishot.utils.bindView
 import com.smilehacker.kwaishot.utils.widget.nest.DragAwayContainer
+import com.ushowmedia.mipha.hyrule.utils.ext.nullOr
+import java.lang.ref.WeakReference
 
 
 /**
  * Created by quan.zhou on 2018/6/22.
  */
 class VideoFragment: Fragment(), CorePlayer.Listener {
-//    private val mSurfaceView by bindView<SurfaceView>(R.id.surface)
-    private val mPlayerContainer by bindView<FrameLayout>(R.id.player_container)
     private val mAnimContainer by bindView<FrameLayout>(R.id.anim_container)
     private val mIvCover by bindView<SimpleDraweeView>(R.id.iv_cover)
-    private val mContainer by bindView<ConstraintLayout>(R.id.container)
+    private val mContainer by bindView<FrameLayout>(R.id.container)
     private val mSnapContainer by bindView<DragAwayContainer>(R.id.snap_container)
     private val mRvVideo by bindView<RecyclerView>(R.id.rv_video)
     private val mRvAdapter by lazy { VideoAdapter() }
+    private val mLayoutManager by lazy { LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false) }
+
+    private var mTextureViewRef : WeakReference<TextureView>? = null
 
     private lateinit var mVideoViewModel: VideoViewModel
 
@@ -46,6 +49,10 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     private var mAnimStart: ValueAnimator? = null
     private var mAnimEnd: ViewPropertyAnimator? = null
 
+    private val mRecyclerPagerHelper by lazy { RecyclerPagerHelper() }
+//    private var mSurfaceView: SurfaceView? = null
+    private var mPostInfo: PosInfo? = null
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.frg_video, container, false)
     }
@@ -53,62 +60,113 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     override fun setUserVisibleHint(isVisibleToUser: Boolean) {
         super.setUserVisibleHint(isVisibleToUser)
         DLog.d("isVisibleToUser $isVisibleToUser")
-        DLog.d("mContainer y = ${mContainer.y} ${mContainer.translationY}")
+        if (isVisibleToUser) {
+            mSnapContainer.reset()
+            mVideoViewModel.readCurrentVideo()
+        } else {
+            releasePlayer()
+            stopAnim()
+            mContainer.alpha = 0f
+        }
     }
 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mVideoViewModel = ViewModelProviders.of(this).get(VideoViewModel::class.java)
-        if (mVideoInfo != null) {
-            mVideoViewModel.setVideoInfo(mVideoInfo!!)
-        }
         initUI()
         initData()
     }
 
-    fun setVideoInfo(videoInfo: VideoInfo) {
-        mVideoInfo = videoInfo
-        if (this::mVideoViewModel.isInitialized) {
-            mVideoViewModel.setVideoInfo(videoInfo)
-        }
-    }
 
     private fun initUI() {
-        mRvVideo.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false)
+        mRvVideo.layoutManager = mLayoutManager
         mRvVideo.adapter = mRvAdapter
+
+        mRecyclerPagerHelper.attachToRecyclerView(mRvVideo)
+
+        mRecyclerPagerHelper.addListener(object : RecyclerPagerHelper.RecyclerPagerListener {
+            override fun onPageSelected(lastPos: Int, currentPos: Int) {
+                DLog.i("onItemSelected $lastPos $currentPos")
+                if (currentPos >= 0 && currentPos != lastPos) {
+                    mVideoViewModel.changeVideo(currentPos)
+//                    showVideoAtPage(currentPos)
+                }
+            }
+        })
+
+        mSnapContainer.setListener(object : DragAwayContainer.DragAwayListener {
+            override fun shouldDismiss(dragY: Float, pos: FloatArray, rect: IntArray): Boolean {
+                DLog.i("dragY = ${dragY}")
+                if (Math.abs(dragY) > mSnapContainer.height / 3) {
+                    mPostInfo?.let {
+                        pos[0] = it.x.toFloat()
+                        pos[1] = it.y.toFloat()
+                        rect[0] = it.width
+                        rect[1] = it.height
+                    }
+                    return true
+                }
+                return false
+            }
+
+            override fun onDismiss() {
+                RxBus.post(CloseVideoPageEvent())
+            }
+
+        })
+
     }
 
     private fun initData() {
+        mVideoViewModel.getVideoList().observe(this, Observer {
+            list ->
+            list.nullOr(ArrayList())
+                    .map { VideoComponent.Model(it.videos[0].urls[0].url) }
+                    .let { mRvAdapter.commitData(it) }
+        })
         mVideoViewModel.getVideoInfo().observe(this, Observer {
-//            println("VideoInfo[$it]")
             if (it != null) {
-                playVideo(it)
+                mVideoInfo = it
+                val pos = mVideoViewModel.getVideoList().value!!.indexOf(it)
+                mRecyclerPagerHelper.setCurrentPos(pos)
+                showVideoAtPage(pos)
             }
-            mRvAdapter.commitData(arrayListOf(VideoComponent.Model("aaa"), VideoComponent.Model("bbb")) as List<Any>?)
+        })
+        mVideoViewModel.getPlayer().observe(this, Observer {
+            mPlayer = it
+            mPlayer!!.addListener(this)
         })
     }
 
-    private fun playVideo(videoInfo: VideoInfo) {
-        mVideoInfo = videoInfo
+    private fun showVideoAtPage(pos: Int) {
+        mRvVideo.post {
+            val itemView = mLayoutManager.findViewByPosition(pos)
+            DLog.i("find itemView $itemView")
 
-        if (activity == null || activity!!.isDestroyed) {
-            return
-        }
-        if (mPlayer != null) {
-            releasePlayer()
+            val textureView = itemView?.findViewById<TextureView>(R.id.surface_view)
+            mPlayer?.attachSurfaceView(textureView)
+
+            mTextureViewRef = if (textureView != null) {
+                WeakReference(textureView)
+            } else {
+                null
+            }
+
+            if (textureView != null) {
+                applyVideoAspectRatio(textureView)
+            }
         }
 
-        mPlayer = CorePlayer(activity!!)
-        mPlayer!!.init()
-        mPlayer!!.addListener(this)
-//        mSurfaceView.visibility = View.INVISIBLE
-//        mPlayer!!.attachSurfaceView(mSurfaceView)
-        mPlayer!!.prepare(videoInfo.videos[0].urls[0].url, true)
     }
 
-    private fun applyVideoAspectRatio() {
-        val videoRatio = mPlayer?.getVideoRatio() ?: return
+
+    private fun applyVideoAspectRatio(view: View) {
+        val player = mPlayer ?: return
+        if (!player.isReady()) {
+            return
+        }
+        val videoRatio = player.getVideoRatio() ?: return
         DLog.i("VideoRatio = $videoRatio")
         val display = activity?.windowManager?.defaultDisplay ?: return
         val size = Point()
@@ -116,22 +174,15 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         val displayRatio = size.x.toFloat() / size.y
 
         if (videoRatio > displayRatio) {
-            mPlayerContainer.layoutParams.height = Math.round(mPlayerContainer.measuredWidth / videoRatio)
-            mPlayerContainer.requestLayout()
+            view.layoutParams.height = Math.round(view.measuredWidth / videoRatio)
+            view.requestLayout()
         } else {
             val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             params.gravity = CENTER
-            mPlayerContainer.layoutParams = params
+            view.layoutParams = params
         }
     }
 
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (hidden) {
-//            mPlayer?.detachSurfaceView(mSurfaceView)
-            mPlayer?.pause()
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -139,9 +190,8 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     }
 
     private fun releasePlayer() {
-//        mPlayer?.detachSurfaceView(mSurfaceView)
-        mPlayer?.release()
-        mPlayer = null
+        mPlayer?.clearSurface()
+        mPlayer?.stop()
     }
 
     /**
@@ -150,11 +200,8 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
 
     override fun onPlayerStateChanged(isPlay: Boolean, playState: Int) {
         if (playState == CorePlayer.STATE_READY) {
-            applyVideoAspectRatio()
-//            mSurfaceView.visibility = View.VISIBLE
-
-            if (isPlay) {
-                animEnd()
+            mTextureViewRef?.get()?.let {
+                applyVideoAspectRatio(it)
             }
         }
     }
@@ -165,12 +212,13 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
 
 
     fun startCoverAnimator(startX: Int, startY: Int, startWidth: Int, startHeight: Int) {
-        mVideoInfo ?: return
+        DLog.i("start CoverAnimator")
+        mPostInfo = PosInfo(startX, startY, startWidth, startHeight)
         mAnimContainer.post { animStart(startX, startY, startWidth, startHeight) }
     }
 
     private fun animStart(startX: Int, startY: Int, startWidth: Int, startHeight: Int) {
-        mPlayerContainer.visibility = View.INVISIBLE
+        mRvVideo.visibility = View.INVISIBLE
         mAnimContainer.visibility = View.VISIBLE
         mContainer.alpha = 0f
 
@@ -188,7 +236,6 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         val endX = 0
         val endY = centerY - endHeight / 2
 
-//        DLog.i("x $startX to $endX, y $startY to $endY, height $startHeight to $endHeight, width $startWidth to $endWidth")
 
         val anim = ValueAnimator.ofInt(100)
         mAnimStart = anim
@@ -196,7 +243,6 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
         val stepY = (endY - startY) / 100f
         val heightStep = (endHeight - startHeight) / 100f
         val widthStep = (endWidth - startWidth) / 100f
-//        DLog.i("heightStep $heightStep   widthStep $widthStep")
         anim.duration = 500
         anim.addUpdateListener {
             val value = it.animatedValue as Int
@@ -210,15 +256,14 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
             lp.height = (startHeight + heightStep * value).toInt()
             lp.width = (startWidth + widthStep * value).toInt()
             mIvCover.requestLayout()
+            DLog.d("anim $value")
         }
         anim.addListener(object : Animator.AnimatorListener {
             override fun onAnimationRepeat(animation: Animator?) {
             }
 
             override fun onAnimationEnd(animation: Animator?) {
-                mAnimContainer.post {
-                    mPlayer?.play()
-                }
+                animEnd()
             }
 
             override fun onAnimationCancel(animation: Animator?) {
@@ -232,7 +277,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     }
 
     private fun animEnd() {
-        mPlayerContainer.visibility = View.VISIBLE
+        mRvVideo.visibility = View.VISIBLE
         mAnimEnd = mAnimContainer.animate()
         mAnimEnd!!.alpha(0f)
                 .setListener(object : Animator.AnimatorListener {
@@ -241,6 +286,7 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
                             mAnimContainer.visibility = View.GONE
                             mAnimContainer.alpha = 1f
                         }
+                        mPlayer?.play()
                     }
 
                     override fun onAnimationCancel(animation: Animator?) {
@@ -264,10 +310,6 @@ class VideoFragment: Fragment(), CorePlayer.Listener {
     }
 
     fun onBackPress() {
-        stopAnim()
-        releasePlayer()
-        mContainer.alpha = 0f
-//        mSnapContainer.reset()
     }
 
     private fun stopAnim() {

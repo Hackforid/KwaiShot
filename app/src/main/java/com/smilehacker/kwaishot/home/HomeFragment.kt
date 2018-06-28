@@ -14,6 +14,7 @@ import android.widget.FrameLayout
 import com.smilehacker.kwaishot.R
 import com.smilehacker.kwaishot.event.OpenVideoPageEvent
 import com.smilehacker.kwaishot.home.feed.FeedAdapter
+import com.smilehacker.kwaishot.player.VideoManager
 import com.smilehacker.kwaishot.ui.component.VideoCellComponent
 import com.smilehacker.kwaishot.utils.RxBus
 import com.smilehacker.kwaishot.utils.bindView
@@ -91,7 +92,9 @@ class HomeFragment : Fragment(), LegoRefreshHelper.OnRefreshListener, VideoCellC
      * Video Cell
      */
     override fun onVideoCellClick(id: Long, posInfo: VideoCellComponent.VideoCellPosInfo?) {
-        val videoInfo = mViewModel.getVideos().value?.find { it.id == id } ?: return
+        val videos = mViewModel.getVideos().value ?: return
+        val videoInfo = videos.find { it.id == id } ?: return
+        VideoManager.prepareVideos(videos, videos.indexOf(videoInfo))
         RxBus.post(OpenVideoPageEvent(videoInfo, posInfo))
     }
 }

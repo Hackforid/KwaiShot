@@ -113,21 +113,18 @@ class CorePlayer(private val context: Context) {
         mPlayer = player
     }
 
-    fun attachSurfaceView(surfaceView: SurfaceView) {
+    fun attachSurfaceView(surfaceView: SurfaceView?) {
         mPlayer?.setVideoSurfaceView(surfaceView)
     }
 
-    fun detachSurfaceView(surfaceView: SurfaceView) {
-        mPlayer?.clearVideoSurfaceView(surfaceView)
-    }
-
-    fun attachSurfaceView(surfaceView: TextureView) {
+    fun attachSurfaceView(surfaceView: TextureView?) {
         mPlayer?.setVideoTextureView(surfaceView)
     }
 
-    fun detachSurfaceView(surfaceView: TextureView) {
-        mPlayer?.clearVideoTextureView(surfaceView)
+    fun clearSurface() {
+        mPlayer?.clearVideoSurface()
     }
+
 
     fun release() {
         mPlayer?.stop()
@@ -160,6 +157,10 @@ class CorePlayer(private val context: Context) {
         mPlayer?.playWhenReady = false
     }
 
+    fun stop() {
+        mPlayer?.stop()
+    }
+
     fun play() {
         mPlayer?.playWhenReady = true
     }
@@ -169,7 +170,9 @@ class CorePlayer(private val context: Context) {
     }
 
     fun addListener(listener: Listener) {
-        mListeners.add(listener)
+        if (!mListeners.contains(listener)) {
+            mListeners.add(listener)
+        }
     }
 
     fun getVideoRatio() : Float {
