@@ -5,7 +5,7 @@ package com.smilehacker.kwaishot.repository.model
  */
 data class VideoInfo(
         val id: Long,
-        val title: String,
+        val title: String?,
         val desc: String?,
 
         val author: Author?,
